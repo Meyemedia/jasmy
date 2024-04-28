@@ -1,0 +1,91 @@
+//@version=5
+indicator(title="Divergence Price RSI GIVE ME JASMY ERECTION NOW", shorttitle="JASMY ERECTION MAKER", overlay=false)
+
+// Price Divergence
+lookbackRightPrice = 5
+lookbackLeftPrice = 5
+rangeUpperPrice = 60
+rangeLowerPrice = 5
+bearColorPrice = color.red
+bullColorPrice = color.green
+textColorPrice = color.white
+noneColorPrice = color.new(color.white, 100)
+
+plFoundPrice = na(ta.pivotlow(close, lookbackLeftPrice, lookbackRightPrice)) ? false : true
+phFoundPrice = na(ta.pivothigh(close, lookbackLeftPrice, lookbackRightPrice)) ? false : true
+
+_inRangePrice(cond) =>
+    bars = ta.barssince(cond == true)
+    rangeLowerPrice <= bars and bars <= rangeUpperPrice
+
+// Regular Bullish Price Divergence
+// Price: Higher Low
+priceHL = close[lookbackRightPrice] > ta.valuewhen(plFoundPrice, close[lookbackRightPrice], 1) and _inRangePrice(plFoundPrice[1])
+// RSI: Lower Low
+rsiLL = ta.rsi(close, 14)[lookbackRightPrice] < ta.valuewhen(plFoundPrice, ta.rsi(close, 14), 1)
+bullCondPrice = priceHL and rsiLL and plFoundPrice
+
+plot(plFoundPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title="Regular Bullish Price Divergence", linewidth=2, color=(bullCondPrice ? bullColorPrice : noneColorPrice))
+
+plotshape(bullCondPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title="Regular Bullish Price Divergence Label", text="Bull", style=shape.labelup, location=location.absolute, color=bullColorPrice, textcolor=textColorPrice)
+
+// Regular Bearish Price Divergence
+// Price: Lower High
+priceLH = close[lookbackRightPrice] < ta.valuewhen(phFoundPrice, close[lookbackRightPrice], 1)
+// RSI: Higher High
+rsiHH = ta.rsi(close, 14)[lookbackRightPrice] > ta.valuewhen(phFoundPrice, ta.rsi(close, 14), 1)
+bearCondPrice = priceLH and rsiHH and phFoundPrice
+
+plot(phFoundPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title="Regular Bearish Price Divergence", linewidth=2, color=(bearCondPrice ? bearColorPrice : noneColorPrice))
+
+plotshape(bearCondPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title="Regular Bearish Price Divergence Label", text="Bear", style=shape.labeldown, location=location.absolute, color=bearColorPrice, textcolor=textColorPrice)
+
+// RSI Divergence
+lookbackRightRSI = 5
+lookbackLeftRSI = 5
+rangeUpperRSI = 73 // Adjusted upper range for red RSI zone
+rangeLowerRSI = 35
+bearColorRSI = color.new(color.red, 20) // Transparent red
+bullColorRSI = color.new(color.green, 20) // Transparent green
+textColorRSI = color.white
+noneColorRSI = color.new(color.white, 100)
+
+plFoundRSI = na(ta.pivotlow(ta.rsi(close, 14), lookbackLeftRSI, lookbackRightRSI)) ? false : true
+phFoundRSI = na(ta.pivothigh(ta.rsi(close, 14), lookbackLeftRSI, lookbackRightRSI)) ? false : true
+
+_inRangeRSI(cond) =>
+    bars = ta.barssince(cond == true)
+    rangeLowerRSI <= bars and bars <= rangeUpperRSI
+
+// Regular Bullish RSI Divergence
+// RSI: Higher Low
+rsiHL = ta.rsi(close, 14)[lookbackRightRSI] > ta.valuewhen(plFoundRSI, ta.rsi(close, 14), 1) and _inRangeRSI(plFoundRSI[1])
+// Price: Lower Low
+priceLL = low[lookbackRightRSI] < ta.valuewhen(plFoundRSI, low[lookbackRightRSI], 1)
+bullCondRSI = rsiHL and priceLL and plFoundRSI
+
+plot(plFoundRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Regular Bullish RSI Divergence", linewidth=2, color=(bullCondRSI ? bullColorRSI : noneColorRSI))
+
+plotshape(bullCondRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Regular Bullish RSI Divergence Label", text="Bull", style=shape.labelup, location=location.absolute, color=bullColorRSI, textcolor=textColorRSI)
+
+// Regular Bearish RSI Divergence
+// RSI: Lower High
+rsiLH = ta.rsi(close, 14)[lookbackRightRSI] < ta.valuewhen(phFoundRSI, ta.rsi(close, 14), 1) and _inRangeRSI(phFoundRSI[1])
+// Price: Higher High
+priceHH = high[lookbackRightRSI] > ta.valuewhen(phFoundRSI, high[lookbackRightRSI], 1)
+bearCondRSI = rsiLH and priceHH and phFoundRSI
+
+plot(phFoundRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Regular Bearish RSI Divergence", linewidth=2, color=(bearCondRSI ? bearColorRSI : noneColorRSI))
+
+plotshape(bearCondRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Regular Bearish RSI Divergence Label", text="Bear", style=shape.labeldown, location=location.absolute, color=bearColorRSI, textcolor=textColorRSI)
+
+// Plot RSI with Purple Line
+plot(ta.rsi(close, 14), color=color.purple, title="RSI", linewidth=2, style=plot.style_line)
+
+// Plot RSI Moving Average with Yellow Line
+rsi_ma = ta.sma(ta.rsi(close, 14), 14)
+plot(rsi_ma, color=color.yellow, title="RSI MA", linewidth=2, style=plot.style_line)
+
+// Add Upper and Lower Zones
+fill(hline(0), hline(rangeLowerRSI), color=bullColorRSI)
+fill(hline(rangeUpperRSI), hline(100), color=bearColorRSI)
