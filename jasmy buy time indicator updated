@@ -1,0 +1,95 @@
+//@version=5
+indicator(title="Divergence Price RSI MA JASMY ERECTION NOW", shorttitle="GIVE ME JASMY ERECTION NOW", overlay=true)
+
+// Price Divergence
+lookbackRightPrice = 5
+lookbackLeftPrice = 5
+rangeUpperPrice = 60
+rangeLowerPrice = 5
+textColorPrice = color.white
+noneColorPrice = color.new(color.white, 100)
+
+plFoundPrice = na(ta.pivotlow(close, lookbackLeftPrice, lookbackRightPrice)) ? false : true
+phFoundPrice = na(ta.pivothigh(close, lookbackLeftPrice, lookbackRightPrice)) ? false : true
+
+_inRangePrice(cond) =>
+    bars = ta.barssince(cond == true)
+    rangeLowerPrice <= bars and bars <= rangeUpperPrice
+
+// Regular Bullish Price Divergence
+// Price: Higher Low
+priceHL = close[lookbackRightPrice] > ta.valuewhen(plFoundPrice, close[lookbackRightPrice], 1) and _inRangePrice(plFoundPrice[1])
+// RSI: Lower Low
+rsiLL = ta.rsi(close, 14)[lookbackRightPrice] < ta.valuewhen(plFoundPrice, ta.rsi(close, 14), 1)
+bullCondPrice = priceHL and rsiLL and plFoundPrice
+
+plot(plFoundPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title="Bul Pr Div", linewidth=2, color=(bullCondPrice ? color.green : noneColorPrice))
+
+plotshape(bullCondPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title=" Bul Pr Div", text="Bull", style=shape.circle, location=location.absolute, color=color.green, size=size.small)
+
+// Regular Bearish Price Divergence
+// Price: Lower High
+priceLH = close[lookbackRightPrice] < ta.valuewhen(phFoundPrice, close[lookbackRightPrice], 1)
+// RSI: Higher High
+rsiHH = ta.rsi(close, 14)[lookbackRightPrice] > ta.valuewhen(phFoundPrice, ta.rsi(close, 14), 1)
+bearCondPrice = priceLH and rsiHH and phFoundPrice
+
+plot(phFoundPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title="Ber P D", linewidth=2, color=(bearCondPrice ? color.red : noneColorPrice))
+
+plotshape(bearCondPrice ? close[lookbackRightPrice] : na, offset=-lookbackRightPrice, title=" Ber P D Label", text="Bear", style=shape.circle, location=location.absolute, color=color.red, size=size.small)
+
+// RSI Divergence
+lookbackRightRSI = 5
+lookbackLeftRSI = 5
+rangeUpperRSI = 60
+rangeLowerRSI = 5
+textColorRSI = color.white
+noneColorRSI = color.new(color.white, 100)
+
+plFoundRSI = na(ta.pivotlow(ta.rsi(close, 14), lookbackLeftRSI, lookbackRightRSI)) ? false : true
+phFoundRSI = na(ta.pivothigh(ta.rsi(close, 14), lookbackLeftRSI, lookbackRightRSI)) ? false : true
+
+_inRangeRSI(cond) =>
+    bars = ta.barssince(cond == true)
+    rangeLowerRSI <= bars and bars <= rangeUpperRSI
+
+// Regular Bullish RSI Divergence
+// RSI: Higher Low
+rsiHL = ta.rsi(close, 14)[lookbackRightRSI] > ta.valuewhen(plFoundRSI, ta.rsi(close, 14), 1) and _inRangeRSI(plFoundRSI[1])
+// Price: Lower Low
+priceLL = low[lookbackRightRSI] < ta.valuewhen(plFoundRSI, low[lookbackRightRSI], 1)
+bullCondRSI = rsiHL and priceLL and plFoundRSI
+
+plot(plFoundRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Reg Bul RSI Div", linewidth=2, color=(bullCondRSI ? color.green : noneColorRSI))
+
+plotshape(bullCondRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Reg Bul RSI Div", text="Bull", style=shape.circle, location=location.absolute, color=color.green, size=size.small)
+
+// Regular Bearish RSI Divergence
+// RSI: Lower High
+rsiLH = ta.rsi(close, 14)[lookbackRightRSI] < ta.valuewhen(phFoundRSI, ta.rsi(close, 14), 1) and _inRangeRSI(phFoundRSI[1])
+// Price: Higher High
+priceHH = high[lookbackRightRSI] > ta.valuewhen(phFoundRSI, high[lookbackRightRSI], 1)
+bearCondRSI = rsiLH and priceHH and phFoundRSI
+
+plot(phFoundRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title="Reg Ber RSI Div", linewidth=2, color=(bearCondRSI ? color.red : noneColorRSI))
+
+plotshape(bearCondRSI ? ta.rsi(close, 14)[lookbackRightRSI] : na, offset=-lookbackRightRSI, title=" Ber RSI Div", text="Bear", style=shape.circle, location=location.absolute, color=color.red, size=size.small)
+
+// Plot RSI with Purple Line
+rsi_color = ta.rsi(close, 14) >= 35 and ta.rsi(close, 14) <= 75 ? color.purple : na
+plot(ta.rsi(close, 14), color=rsi_color, title="RSI")
+
+// Plot RSI Moving Average with Yellow Line
+rsi_ma = ta.sma(ta.rsi(close, 14), 14)
+plot(rsi_ma, color=color.yellow, title="RSI MA")
+
+// Define upper and lower RSI levels
+lower_rsi_level = 35
+upper_rsi_level = 75
+
+// Plot Lower Zone (35 RSI to 0 RSI) with Transparent Green Tint
+fill(hline(lower_rsi_level), hline(0), color=color.new(color.green, 80))
+
+// Plot Upper Zone (75 RSI to 90 RSI) with Transparent Red Tint
+fill(hline(upper_rsi_level), hline(90), color=color.new(color.red, 80))
+
